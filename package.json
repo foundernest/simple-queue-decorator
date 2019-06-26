@@ -1,0 +1,55 @@
+{
+    "name": "simple-queue-decorator",
+    "version": "0.1.0",
+    "description": "A simple interface with RabbitMQ through typescript decorators",
+    "main": "dist/index.js",
+    "directories": {
+        "test": "tests"
+    },
+    "dependencies": {
+        "amqplib": "^0.5.3",
+        "typescript": "^3.5.1"
+    },
+    "devDependencies": {
+        "@types/amqplib": "^0.5.12",
+        "@types/mocha": "^5.2.7",
+        "@types/node": "^12.0.8",
+        "mocha": "^6.1.4",
+        "nyc": "^14.1.1",
+        "prettier": "^1.18.2",
+        "ts-node": "^8.2.0",
+        "tslint": "^5.18.0",
+        "tslint-config-prettier": "^1.18.0"
+    },
+    "scripts": {
+        "test": "npm run tsc && nyc --reporter=lcov mocha -r ts-node/register tests/*.test.ts",
+        "tsc": "rm -rf dist && tsc",
+        "tslint": "tslint 'src/**/*.ts?(x)'"
+    },
+    "files": [
+        "dist"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/foundernest/simple-queue-decorator.git"
+    },
+    "keywords": [
+        "rabbitmq",
+        "queue",
+        "amqp",
+        "typescript",
+        "decorator"
+    ],
+    "author": "FounderNest",
+    "license": "GPL-3.0",
+    "bugs": {
+        "url": "https://github.com/foundernest/simple-queue-decorator/issues"
+    },
+    "prettier": {
+        "tabWidth": 2,
+        "semi": false,
+        "singleQuote": true,
+        "trailingComma": "es5"
+    },
+    "homepage": "https://github.com/foundernest/simple-queue-decorator#readme"
+}
