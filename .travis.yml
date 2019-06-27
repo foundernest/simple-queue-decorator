@@ -1,0 +1,15 @@
+language: node_js
+services: rabbitmq
+os:
+  - linux
+node_js:
+  - 'stable'
+  - 'lts/*'
+
+script:
+  - npm run tslint
+  - npm test
+
+cache:
+  directories:
+    - node_modules

@@ -1,5 +1,6 @@
-Wolpertinger
-============
+Simple Queue Decorator
+======================
+_by @foundernest_
 
 Simple decorator-based wrapper for easy RabbitMQ queuing.
 
@@ -14,7 +15,9 @@ Simple decorator-based wrapper for easy RabbitMQ queuing.
 * Concurrency control
 
 ## How To
-Both JavaScript and Typescript can be used, however, this library is oriented to Typescript usage. `OnQueue` decorator is only available using Typescript
+Both JavaScript and Typescript can be used, however, this library is oriented to Typescript usage. `OnQueue` decorator is only available using Typescript.
+
+> A running instance of RabbitMQ is needed, a docker-compose file is provided to use along with this library in a dev env (`docker-compose up -d rabbitmq`). **Do not use** the given image in production
 
 Init the service:
 
@@ -75,6 +78,13 @@ The following options can be passed to `initService`:
 * **log**: If true, will log internal queue errors, defaults to true.
 * **messageConcurrency**: The number of messages to be consumed at the same time, defaults to 1.
 
+### Development steps
+node and npm required, either docker or a running instance of rabbitmq required.
+
+1. `npm install`
+2. `npm run tsc` to compile
+3. (optional) `docker-compose up -d rabbitmq` to launch rabbitmq
+4. `npm test` to compile and execute tests
 
 ### Important Notes
 
