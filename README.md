@@ -2,6 +2,8 @@ Simple Queue Decorator
 ======================
 _by @foundernest_
 
+[![Build Status](https://travis-ci.org/foundernest/simple-queue-decorator.svg?branch=master)](https://travis-ci.org/foundernest/simple-queue-decorator)
+
 Simple decorator-based wrapper for easy RabbitMQ queuing.
 
 ## Features
