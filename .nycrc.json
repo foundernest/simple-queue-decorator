@@ -1,0 +1,7 @@
+{
+    "sourceMap": true,
+    "all": true,
+    "extension": [".ts"],
+    "exclude": ["**/*.d.ts", "tests", "coverage"],
+    "reporter": ["text-summary", "html", "lcovonly"]
+}

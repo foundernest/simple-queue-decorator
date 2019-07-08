@@ -10,7 +10,7 @@
   "devDependencies": {
     "@types/amqplib": "^0.5.13",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.0.10",
+    "@types/node": "^12.0.12",
     "mocha": "^6.1.4",
     "nyc": "^14.1.1",
     "prettier": "^1.18.2",
@@ -18,7 +18,7 @@
     "tslint-config-prettier": "^1.18.0"
   },
   "scripts": {
-    "test": "npm run tsc && nyc --reporter=lcov mocha dist/tests/*.test.js",
+    "test": "npm run tsc && nyc mocha dist/tests/*.test.js",
     "tsc": "rm -rf dist && tsc",
     "tslint": "tslint 'src/**/*.ts?(x)'",
     "prepublishOnly": "npm run tslint && npm test"
