@@ -4,4 +4,5 @@ export type AppOptions = {
   password: string
   messageConcurrency?: number
   log?: boolean
+  retry?: boolean
 }

@@ -23,20 +23,34 @@ class BadWolpertingerTest {
 }
 
 describe('Failed Messages', () => {
-  before(async () => {
-    await initService(Config)
-  })
-
-  after(async () => {
+  afterEach(async () => {
     await closeService()
   })
 
   it('Retry Failed Message Once', async () => {
+    await initService(Config)
+
     sendMessage('wolpertinger-bad-test-queue', { test: 'Bad1' })
     const msg1 = await BadWolpertingerTest.waitForNextMessage()
     assert.strictEqual(msg1.test, 'Bad1')
     const msg2 = await BadWolpertingerTest.waitForNextMessage()
     assert.strictEqual(msg2.test, 'Bad1')
+
+    return new Promise(async (resolve, reject) => {
+      setTimeout(() => {
+        resolve()
+      }, 500)
+      BadWolpertingerTest.waitForNextMessage().then(() => {
+        reject(new Error('No more messages Expected'))
+      })
+    })
+  })
+
+  it('Disable Retry Message', async () => {
+    await initService({ ...Config, retry: false })
+    sendMessage('wolpertinger-bad-test-queue', { test: 'Bad1' })
+    const msg1 = await BadWolpertingerTest.waitForNextMessage()
+    assert.strictEqual(msg1.test, 'Bad1')
 
     return new Promise(async (resolve, reject) => {
       setTimeout(() => {

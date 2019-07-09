@@ -15,31 +15,32 @@ Simple decorator-based wrapper for easy RabbitMQ queuing.
 * Ack and messages retries already set.
 * Automatic creation of queues.
 * JSON serialization/deserialization of messages.
-* Concurrency control
+* Concurrency control.
+* Full Typescript support.
 
 ## How To
-Both JavaScript and Typescript can be used, however, this library is oriented to Typescript usage. `OnQueue` decorator is only available using Typescript.
+Both JavaScript and Typescript can be used, however, this library takes advantage of Typescript decorators. `OnQueue` decorator is only available using Typescript.
 
 > A running instance of RabbitMQ is needed, a docker-compose file is provided to use along with this library in a dev env (`docker-compose up -d rabbitmq`). **Do not use** the given image in production
 
 Init the service:
 
 ```ts
-import * as Wolpertinger from 'wolpertinger'
+import * as SimpleQueueDecorator from 'simple-queue-decorator'
 
-await Wolpertinger.initService({
+await SimpleQueueDecorator.initService({
     url: "127.0.0.1",
     user: "guest",
     password: "guest"
 })
 
-await Wolpertinger.closeService(); // Closes the service
+await SimpleQueueDecorator.closeService(); // Closes the service
 ```
 
 
 Consume Messages (this can be done before `initService`):
 ```ts
-import { OnQueue } from 'wolpertinger'
+import { OnQueue } from 'simple-queue-decorator'
 
 class MyConsumer {
 
@@ -51,26 +52,30 @@ class MyConsumer {
 }
 ```
 
+> It is recommended to use static methods with queue decorator
+
 Send Messages (Service must be initiated beforehand):
 
 ```ts
-import * as Wolpertinger from 'wolpertinger'
+import * as SimpleQueueDecorator from 'simple-queue-decorator'
 
-Wolpertinger.sendMessage('my-queue', {foo: "my message name"})
+SimpleQueueDecorator.sendMessage('my-queue', {foo: "my message name"})
 
 ```
 
 Messages can also be listened without using the decorator:
 
 ```ts
-import * as Wolpertinger from 'wolpertinger'
+import * as SimpleQueueDecorator from 'simple-queue-decorator'
 
 
-Wolpertinger.registerQueue("my-queue", async (msg) => {
+SimpleQueueDecorator.registerQueue("my-queue", async (msg) => {
     console.log("Message Received", msg.foo)
     await doSomethingWithMyMsg(msg)
 })
 ```
+
+This is preferable if using JavaScript or using dynamic dependencies (e.g. injectables) in the queue callback.
 
 
 The following options can be passed to `initService`:
@@ -80,6 +85,7 @@ The following options can be passed to `initService`:
 * **password**: RabbitMQ password.
 * **log**: If true, will log internal queue errors, defaults to true.
 * **messageConcurrency**: The number of messages to be consumed at the same time, defaults to 1.
+* **retry**: If true, 1 retry per message will be made if the callback returns a rejected promise, defaults to true.
 
 ### Development steps
 node and npm required, either docker or a running instance of rabbitmq required.
@@ -98,3 +104,4 @@ This library makes several assumptions on how the messages are going to be consu
 * A single connection to be shared between all consumers.
 * Queues are created with persistence.
 * Messages are JSON formatted.
+* By default, messages are consumed 1 at a time.

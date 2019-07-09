@@ -114,6 +114,10 @@ export default class RabbitMQService {
       : this.options.messageConcurrency
   }
 
+  private get retry(): boolean {
+    return this.options.retry === undefined ? true : this.options.retry
+  }
+
   private get channel(): amqp.Channel {
     if (!this._channel) {
       throw new Error('[RabbitMQ] Not Connected')
@@ -129,7 +133,7 @@ export default class RabbitMQService {
       await this.createQueue(queueName)
       await this.channel.consume(
         queueName,
-        async msg => {
+        async (msg: any) => {
           if (!msg) {
             this.log.error('[RabbitMQ] Message received is null')
           } else {
@@ -146,10 +150,11 @@ export default class RabbitMQService {
                 this.log.warn(err.message)
               }
               if (this.channel) {
-                if (msg.fields.redelivered) {
-                  this.channel.nack(msg, false, false)
-                } else {
+                const shouldRetry = this.retry && !msg.fields.redelivered
+                if (shouldRetry) {
                   this.channel.nack(msg, false, true)
+                } else {
+                  this.channel.nack(msg, false, false)
                 }
               }
             }
