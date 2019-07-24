@@ -1,3 +1,9 @@
+0.1.2 / 2019-07-24
+==================
+
+* Dev dependencies updated
+* Removed package-lock from repository
+
 0.1.1 / 2019-06-09
 ==================
 

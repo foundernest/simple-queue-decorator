@@ -1,6 +1,6 @@
 {
   "name": "simple-queue-decorator",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A simple interface with RabbitMQ through typescript decorators",
   "main": "dist/index.js",
   "dependencies": {
@@ -10,8 +10,8 @@
   "devDependencies": {
     "@types/amqplib": "^0.5.13",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.6.1",
-    "mocha": "^6.1.4",
+    "@types/node": "^12.6.8",
+    "mocha": "^6.2.0",
     "nyc": "^14.1.1",
     "prettier": "^1.18.2",
     "tslint": "^5.18.0",

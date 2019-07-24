@@ -93,7 +93,7 @@ node and npm required, either docker or a running instance of rabbitmq required.
 1. `npm install`
 2. `npm run tsc` to compile
 3. (optional) `docker-compose up -d rabbitmq` to launch rabbitmq
-4. `npm test` to compile and execute tests
+4. `npm test` to compile and execute tests (rabbitmq must be running)
 
 ### Important Notes
 
