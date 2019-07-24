@@ -11,7 +11,7 @@
     "@types/amqplib": "^0.5.13",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.6.8",
-    "mocha": "~6.1.4",
+    "mocha": "~6.2.0",
     "nyc": "^14.1.1",
     "prettier": "^1.18.2",
     "tslint": "^5.18.0",
