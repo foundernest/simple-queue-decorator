@@ -4,7 +4,7 @@
 * Dev dependencies updated
 * Removed package-lock from repository
 
-0.1.1 / 2019-06-09
+0.1.1 / 2019-07-09
 ==================
 
 * Added retry option
