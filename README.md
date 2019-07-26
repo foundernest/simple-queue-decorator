@@ -15,6 +15,7 @@ Simple decorator-based wrapper for easy RabbitMQ queuing.
 * Ack and messages retries already set.
 * Automatic creation of queues.
 * JSON serialization/deserialization of messages.
+* Messages priority.
 * Concurrency control.
 * Full Typescript support.
 
@@ -76,6 +77,22 @@ SimpleQueueDecorator.registerQueue("my-queue", async (msg) => {
 ```
 
 This is preferable if using JavaScript or using dynamic dependencies (e.g. injectables) in the queue callback.
+
+Send a message with priority:
+
+```ts
+import * as SimpleQueueDecorator from 'simple-queue-decorator'
+
+SimpleQueueDecorator.sendMessage('my-queue',
+ {foo: "my message name"},
+  {
+      priority: SimpleQueueDecorator.MessagePriority.HIGH
+});
+```
+
+Messages will be ordered and received according to priority. Priority can be `LOW`, `MEDIUM` or `HIGH`, a number ranging from 1 to 10 can also be used. Keep in mind the following:
+* Messages with no priority set are considered lower than any priority (including `LOW`)
+* When messages are instantly consumed, order may not be guaranteed.
 
 
 The following options can be passed to `initService`:

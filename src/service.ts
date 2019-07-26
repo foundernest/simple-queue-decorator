@@ -1,6 +1,6 @@
 import amqp from 'amqplib'
 import { wait } from './utils'
-import { AppOptions } from './types'
+import { AppOptions, SendMessageOptions } from './types'
 import Log from './log'
 
 type QueueRegistry = {
@@ -32,10 +32,11 @@ export default class RabbitMQService {
     this.log = new Log(options.log)
   }
 
-  public async sendMessage(queue: string, msg: any): Promise<void> {
+  public async sendMessage(queue: string, msg: any, options: SendMessageOptions): Promise<void> {
     await this.createQueue(queue)
     this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
       persistent: true,
+      priority: options.priority
     })
   }
 
@@ -168,7 +169,7 @@ export default class RabbitMQService {
   private async createQueue(queueName: string): Promise<void> {
     const queueAlreadyExists = this.assertedQueues.has(queueName)
     if (!queueAlreadyExists) {
-      await this.channel.assertQueue(queueName, { durable: true }) // Creates the queue if doesn't exists
+      await this.channel.assertQueue(queueName, { durable: true, maxPriority: 10 }) // Creates the queue if doesn't exists
       this.assertedQueues.add(queueName)
     }
   }

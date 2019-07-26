@@ -1,5 +1,5 @@
 import RabbitMQService from './src/service'
-import { AppOptions } from './src/types'
+import { AppOptions, SendMessageOptions } from './src/types'
 
 const rabbitService = new RabbitMQService()
 
@@ -14,8 +14,12 @@ export async function initService(options: AppOptions): Promise<void> {
   await rabbitService.connect()
 }
 
-export function sendMessage(queue: string, msg: any): Promise<void> {
-  return rabbitService.sendMessage(queue, msg)
+export function sendMessage(
+  queue: string,
+  msg: any,
+  options: SendMessageOptions = {}
+): Promise<void> {
+  return rabbitService.sendMessage(queue, msg, options)
 }
 
 export function closeService(): Promise<void> {
@@ -40,4 +44,10 @@ export function OnQueue(queueName: string): DecoratorFunction {
       propertyDescriptor.value.bind(target)
     )
   }
+}
+
+export enum MessagePriority {
+  LOW = 2,
+  MEDIUM = 4,
+  HIGH = 7,
 }

@@ -65,7 +65,7 @@ describe('Send And Received Queue Messages', () => {
       done()
       return Promise.resolve()
     }
-    registerQueue('no-decorator-queue', msgCallback) // No need for await, asi registering is immediate
+    registerQueue('no-decorator-queue', msgCallback) // No need for await, so registering is immediate
     sendMessage('no-decorator-queue', { test: 'arthur' })
   })
 })
