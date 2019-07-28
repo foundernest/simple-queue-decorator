@@ -18,6 +18,7 @@ Simple decorator-based wrapper for easy RabbitMQ queuing.
 * Messages priority.
 * Concurrency control.
 * Full Typescript support.
+* Queue ACK for messages sent.
 
 ## How To
 Both JavaScript and Typescript can be used, however, this library takes advantage of Typescript decorators. `OnQueue` decorator is only available using Typescript.
@@ -103,6 +104,7 @@ The following options can be passed to `initService`:
 * **log**: If true, will log internal queue errors, defaults to true.
 * **messageConcurrency**: The number of messages to be consumed at the same time, defaults to 1.
 * **retry**: If true, 1 retry per message will be made if the callback returns a rejected promise, defaults to true.
+* **maxConnectionAttempts**: Maximum number of recconnection attempts on `initService`, if 0, it will attempt indefinitely. Defaults to 0.
 
 ### Development steps
 node and npm required, either docker or a running instance of rabbitmq required.

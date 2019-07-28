@@ -12,7 +12,7 @@ type QueueRegistry = {
 
 export default class RabbitMQService {
   private _options?: AppOptions
-  private _channel?: amqp.Channel
+  private _channel?: amqp.ConfirmChannel
   private queueRegistry: QueueRegistry = {}
   private connection?: amqp.Connection
   private connected = false
@@ -34,9 +34,18 @@ export default class RabbitMQService {
 
   public async sendMessage(queue: string, msg: any, options: SendMessageOptions): Promise<void> {
     await this.createQueue(queue)
-    this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
-      persistent: true,
-      priority: options.priority
+    await new Promise((resolve,reject) => {
+      this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
+        persistent: true,
+        priority: options.priority
+      }, (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve()
+        }
+      })
+
     })
   }
 
@@ -54,11 +63,14 @@ export default class RabbitMQService {
   public async connect(): Promise<void> {
     this.disconnect()
     this.connectRetry = true
-    while (!this.connected && this.connectRetry) {
+    let retries = 0
+
+    while (this.shouldRetryConnection(retries)) {
+      retries++
       try {
         this.log.log('[RabbitMQ] Connecting')
         this.connection = await amqp.connect(this.url)
-        this._channel = await this.connection.createChannel()
+        this._channel = await this.connection.createConfirmChannel()
         await this.channel.prefetch(this.concurrency) // Number of messages to fetch simultaneously
         this.connection.on('close', () => {
           this.connection = undefined
@@ -78,7 +90,7 @@ export default class RabbitMQService {
         this.connected = true
         this.log.log('[RabbitMQ] Connected')
       } catch (err) {
-        this.log.warn('[RabbitMQ] Error Connecting', err)
+        this.log.warn('[RabbitMQ] Error Connecting', err.message)
         await wait(5000)
       }
     }
@@ -119,12 +131,22 @@ export default class RabbitMQService {
     return this.options.retry === undefined ? true : this.options.retry
   }
 
-  private get channel(): amqp.Channel {
+  private get channel(): amqp.ConfirmChannel {
     if (!this._channel) {
       throw new Error('[RabbitMQ] Not Connected')
     } else {
       return this._channel
     }
+  }
+
+  private shouldRetryConnection(retries: number): boolean {
+    if (this.options.maxConnectionAttempts) {
+      if (retries >= this.options.maxConnectionAttempts) {
+        this.log.log(`[RabbitMQ] Max Reconnection attemps [${retries}] - will not try to connect anymore.`)
+        return false
+      }
+    }
+    return (!this.connected && this.connectRetry)
   }
 
   private async consumeQueue(queueName: string): Promise<void> {

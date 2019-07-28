@@ -5,6 +5,7 @@ export type AppOptions = {
     messageConcurrency?: number
     log?: boolean
     retry?: boolean
+    maxConnectionAttempts?: number
 }
 
 export type SendMessageOptions = {

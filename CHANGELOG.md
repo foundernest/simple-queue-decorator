@@ -1,3 +1,10 @@
+1.1.0 / 2019-07-29
+==================
+
+* SendToQueue will now resolve after rabbitmq acked
+* Max Reconnection Retries option
+* Logs improved
+
 1.0.0 / 2019-07-26
 ==================
 
