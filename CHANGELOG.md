@@ -2,6 +2,7 @@
 ==================
 
 * Added connectionRetryDelay option
+* Max retry attempts error will be thrown before next retry
 
 1.1.0 / 2019-07-29
 ==================

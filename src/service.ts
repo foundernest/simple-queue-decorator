@@ -99,6 +99,11 @@ export default class RabbitMQService {
         this.log.log('[RabbitMQ] Connected')
       } catch (err) {
         this.log.warn('[RabbitMQ] Error Connecting', err.message)
+        if (!this.shouldRetryConnection(retries)) {
+          throw new Error(
+            `[RabbitMQ] Max Reconnection attemps [${retries}] - will not try to connect anymore.`
+          )
+        }
         await wait(this.connectionDelay)
       }
     }
@@ -159,9 +164,6 @@ export default class RabbitMQService {
   private shouldRetryConnection(retries: number): boolean {
     if (this.options.maxConnectionAttempts) {
       if (retries >= this.options.maxConnectionAttempts) {
-        this.log.log(
-          `[RabbitMQ] Max Reconnection attemps [${retries}] - will not try to connect anymore.`
-        )
         return false
       }
     }
