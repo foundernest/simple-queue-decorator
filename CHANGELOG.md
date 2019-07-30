@@ -1,8 +1,9 @@
-1.2.0 / ####-##-##
+1.2.0 / 2019-07-31
 ==================
 
 * Added connectionRetryDelay option
 * Max retry attempts error will be thrown before next retry
+* Fixed wrong warning log that was being shown on successfull connections
 
 1.1.0 / 2019-07-29
 ==================

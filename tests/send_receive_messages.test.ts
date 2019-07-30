@@ -59,13 +59,16 @@ describe('Send And Received Queue Messages', () => {
     }
   })
 
-  it('Register Queue Without Decorator', done => {
-    function msgCallback(msg: any): Promise<void> {
-      assert.strictEqual(msg.test, 'arthur')
-      done()
-      return Promise.resolve()
-    }
-    registerQueue('no-decorator-queue', msgCallback) // No need for await, so registering is immediate
-    sendMessage('no-decorator-queue', { test: 'arthur' })
+  it('Register Queue Without Decorator', async () => {
+    const p = new Promise(resolve => {
+      function msgCallback(msg: any): Promise<void> {
+        assert.strictEqual(msg.test, 'arthur')
+        resolve()
+        return Promise.resolve()
+      }
+      registerQueue('no-decorator-queue', msgCallback) // No need for await, so registering is immediate
+    })
+    await sendMessage('no-decorator-queue', { test: 'arthur' })
+    await p
   })
 })
