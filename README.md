@@ -105,6 +105,7 @@ The following options can be passed to `initService`:
 * **messageConcurrency**: The number of messages to be consumed at the same time, defaults to 1.
 * **retry**: If true, 1 retry per message will be made if the callback returns a rejected promise, defaults to true.
 * **maxConnectionAttempts**: Maximum number of recconnection attempts on `initService`, if 0, it will attempt indefinitely. Defaults to 0.
+* **connectionRetryDelay**: Milliseconds to wait before connection attempts. Defaults to 5
 
 ### Development steps
 node and npm required, either docker or a running instance of rabbitmq required.

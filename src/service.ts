@@ -32,20 +32,28 @@ export default class RabbitMQService {
     this.log = new Log(options.log)
   }
 
-  public async sendMessage(queue: string, msg: any, options: SendMessageOptions): Promise<void> {
+  public async sendMessage(
+    queue: string,
+    msg: any,
+    options: SendMessageOptions
+  ): Promise<void> {
     await this.createQueue(queue)
-    await new Promise((resolve,reject) => {
-      this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)), {
-        persistent: true,
-        priority: options.priority
-      }, (err) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve()
+    await new Promise((resolve, reject) => {
+      this.channel.sendToQueue(
+        queue,
+        Buffer.from(JSON.stringify(msg)),
+        {
+          persistent: true,
+          priority: options.priority,
+        },
+        err => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve()
+          }
         }
-      })
-
+      )
     })
   }
 
@@ -91,7 +99,12 @@ export default class RabbitMQService {
         this.log.log('[RabbitMQ] Connected')
       } catch (err) {
         this.log.warn('[RabbitMQ] Error Connecting', err.message)
-        await wait(5000)
+        if (!this.shouldRetryConnection(retries)) {
+          throw new Error(
+            `[RabbitMQ] Max Reconnection attemps [${retries}] - will not try to connect anymore.`
+          )
+        }
+        await wait(this.connectionDelay)
       }
     }
   }
@@ -139,14 +152,22 @@ export default class RabbitMQService {
     }
   }
 
+  private get connectionDelay(): number {
+    const delay = this.options.connectionRetryDelay
+    if (delay === undefined) {
+      return 5000
+    } else {
+      return delay
+    }
+  }
+
   private shouldRetryConnection(retries: number): boolean {
     if (this.options.maxConnectionAttempts) {
       if (retries >= this.options.maxConnectionAttempts) {
-        this.log.log(`[RabbitMQ] Max Reconnection attemps [${retries}] - will not try to connect anymore.`)
         return false
       }
     }
-    return (!this.connected && this.connectRetry)
+    return !this.connected && this.connectRetry
   }
 
   private async consumeQueue(queueName: string): Promise<void> {
@@ -191,7 +212,10 @@ export default class RabbitMQService {
   private async createQueue(queueName: string): Promise<void> {
     const queueAlreadyExists = this.assertedQueues.has(queueName)
     if (!queueAlreadyExists) {
-      await this.channel.assertQueue(queueName, { durable: true, maxPriority: 10 }) // Creates the queue if doesn't exists
+      await this.channel.assertQueue(queueName, {
+        durable: true,
+        maxPriority: 10,
+      }) // Creates the queue if doesn't exists
       this.assertedQueues.add(queueName)
     }
   }
