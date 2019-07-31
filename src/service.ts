@@ -2,6 +2,7 @@ import amqp from 'amqplib'
 import { wait } from './utils'
 import { AppOptions, SendMessageOptions } from './types'
 import Log from './log'
+import MessageEmitter from './messageEmitter'
 
 type QueueRegistry = {
   [q: string]: {
@@ -37,24 +38,9 @@ export default class RabbitMQService {
     msg: any,
     options: SendMessageOptions
   ): Promise<void> {
-    await this.createQueue(queue)
-    await new Promise((resolve, reject) => {
-      this.channel.sendToQueue(
-        queue,
-        Buffer.from(JSON.stringify(msg)),
-        {
-          persistent: true,
-          priority: options.priority,
-        },
-        err => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve()
-          }
-        }
-      )
-    })
+    await this.assertQueue(queue)
+    const emitter = new MessageEmitter(this.channel)
+    await emitter.sendMessage(queue, msg, options)
   }
 
   public registerQueue(queueName: string, cb: (r: any) => Promise<void>): void {
@@ -174,7 +160,7 @@ export default class RabbitMQService {
     const queueData = this.queueRegistry[queueName]
     if (this._channel && !queueData.connected) {
       queueData.connected = true
-      await this.createQueue(queueName)
+      await this.assertQueue(queueName)
       await this.channel.consume(
         queueName,
         async (msg: any) => {
@@ -209,7 +195,7 @@ export default class RabbitMQService {
     }
   }
 
-  private async createQueue(queueName: string): Promise<void> {
+  private async assertQueue(queueName: string): Promise<void> {
     const queueAlreadyExists = this.assertedQueues.has(queueName)
     if (!queueAlreadyExists) {
       await this.channel.assertQueue(queueName, {
