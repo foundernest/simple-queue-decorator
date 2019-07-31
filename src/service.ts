@@ -7,19 +7,20 @@ import MessageEmitter from './messageEmitter'
 type QueueRegistry = {
   [q: string]: {
     cb: (r: any) => Promise<void>
-    connected: boolean
+    connected: boolean // This is to make "consumeQueue" idempotent
   }
 }
+
+type ServiceStatus = 'connected' | 'idle' | 'connecting'
 
 export default class RabbitMQService {
   private _options?: AppOptions
   private _channel?: amqp.ConfirmChannel
   private queueRegistry: QueueRegistry = {}
   private connection?: amqp.Connection
-  private connected = false
   private log: Log
   private assertedQueues: Set<string> = new Set() // Avoid duplicated queues
-  private connectRetry = true
+  private status: ServiceStatus = 'idle'
 
   constructor(options?: AppOptions) {
     this.log = new Log(true)
@@ -56,7 +57,7 @@ export default class RabbitMQService {
 
   public async connect(): Promise<void> {
     this.disconnect()
-    this.connectRetry = true
+    this.status = 'connecting'
     let retries = 0
 
     while (this.shouldRetryConnection(retries)) {
@@ -70,7 +71,7 @@ export default class RabbitMQService {
           this.connection = undefined
           this._channel = undefined
           // Unexpected close
-          if (this.connected) {
+          if (this.status === 'connected') {
             this.log.warn('[RabbitMQ] Unexpected Close')
             this.connect()
           }
@@ -81,7 +82,7 @@ export default class RabbitMQService {
           })
         )
 
-        this.connected = true
+        this.status = 'connected'
         this.log.log('[RabbitMQ] Connected')
       } catch (err) {
         this.log.warn('[RabbitMQ] Error Connecting', err.message)
@@ -96,8 +97,7 @@ export default class RabbitMQService {
   }
 
   public async disconnect(): Promise<void> {
-    this.connected = false
-    this.connectRetry = false
+    this.status = 'idle'
     for (const q of Object.keys(this.queueRegistry)) {
       this.queueRegistry[q].connected = false
     }
@@ -139,12 +139,9 @@ export default class RabbitMQService {
   }
 
   private get connectionDelay(): number {
+    const defaultConnectionDelay = 5000
     const delay = this.options.connectionRetryDelay
-    if (delay === undefined) {
-      return 5000
-    } else {
-      return delay
-    }
+    return delay === undefined ? defaultConnectionDelay : delay
   }
 
   private shouldRetryConnection(retries: number): boolean {
@@ -153,7 +150,7 @@ export default class RabbitMQService {
         return false
       }
     }
-    return !this.connected && this.connectRetry
+    return this.status === 'connecting'
   }
 
   private async consumeQueue(queueName: string): Promise<void> {
