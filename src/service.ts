@@ -11,7 +11,11 @@ type QueueRegistry = {
   }
 }
 
-type ServiceStatus = 'connected' | 'idle' | 'connecting'
+enum ServiceStatus {
+  Connected,
+  Idle,
+  Connecting,
+}
 
 export default class RabbitMQService {
   private _options?: AppOptions
@@ -20,7 +24,7 @@ export default class RabbitMQService {
   private connection?: amqp.Connection
   private log: Log
   private assertedQueues: Set<string> = new Set() // Avoid duplicated queues
-  private status: ServiceStatus = 'idle'
+  private status: ServiceStatus = ServiceStatus.Idle
 
   constructor(options?: AppOptions) {
     this.log = new Log(true)
@@ -57,7 +61,7 @@ export default class RabbitMQService {
 
   public async connect(): Promise<void> {
     this.disconnect()
-    this.status = 'connecting'
+    this.status = ServiceStatus.Connecting
     let retries = 0
 
     while (this.shouldRetryConnection(retries)) {
@@ -71,7 +75,7 @@ export default class RabbitMQService {
           this.connection = undefined
           this._channel = undefined
           // Unexpected close
-          if (this.status === 'connected') {
+          if (this.status === ServiceStatus.Connected) {
             this.log.warn('[RabbitMQ] Unexpected Close')
             this.connect()
           }
@@ -82,7 +86,7 @@ export default class RabbitMQService {
           })
         )
 
-        this.status = 'connected'
+        this.status = ServiceStatus.Connected
         this.log.log('[RabbitMQ] Connected')
       } catch (err) {
         this.log.warn('[RabbitMQ] Error Connecting', err.message)
@@ -97,7 +101,7 @@ export default class RabbitMQService {
   }
 
   public async disconnect(): Promise<void> {
-    this.status = 'idle'
+    this.status = ServiceStatus.Idle
     for (const q of Object.keys(this.queueRegistry)) {
       this.queueRegistry[q].connected = false
     }
@@ -150,7 +154,7 @@ export default class RabbitMQService {
         return false
       }
     }
-    return this.status === 'connecting'
+    return this.status === ServiceStatus.Connecting
   }
 
   private async consumeQueue(queueName: string): Promise<void> {
