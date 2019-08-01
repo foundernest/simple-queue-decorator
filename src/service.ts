@@ -1,6 +1,11 @@
 import amqp from 'amqplib'
 import { wait } from './utils'
-import { AppOptions, SendMessageOptions } from './types'
+import {
+  InitOptions,
+  SendMessageOptions,
+  ServiceOptions,
+  DefaultOptions,
+} from './types'
 import Log from './log'
 import MessageEmitter from './messageEmitter'
 
@@ -11,6 +16,13 @@ type QueueRegistry = {
   }
 }
 
+const DEFAULT_OPTIONS: DefaultOptions = {
+  messageConcurrency: 1,
+  log: true,
+  retry: true,
+  connectionRetryDelay: 5000,
+}
+
 enum ServiceStatus {
   Connected,
   Idle,
@@ -18,7 +30,7 @@ enum ServiceStatus {
 }
 
 export default class RabbitMQService {
-  private _options?: AppOptions
+  private _options?: InitOptions
   private _channel?: amqp.ConfirmChannel
   private queueRegistry: QueueRegistry = {}
   private connection?: amqp.Connection
@@ -26,14 +38,14 @@ export default class RabbitMQService {
   private assertedQueues: Set<string> = new Set() // Avoid duplicated queues
   private status: ServiceStatus = ServiceStatus.Idle
 
-  constructor(options?: AppOptions) {
+  constructor(options?: InitOptions) {
     this.log = new Log(true)
     if (options) {
       this.setOptions(options)
     }
   }
 
-  public setOptions(options: AppOptions): void {
+  public setOptions(options: InitOptions): void {
     this._options = options
     this.log = new Log(options.log)
   }
@@ -70,7 +82,7 @@ export default class RabbitMQService {
         this.log.log('[RabbitMQ] Connecting')
         this.connection = await amqp.connect(this.url)
         this._channel = await this.connection.createConfirmChannel()
-        await this.channel.prefetch(this.concurrency) // Number of messages to fetch simultaneously
+        await this.channel.prefetch(this.options.messageConcurrency) // Number of messages to fetch simultaneously
         this.connection.on('close', () => {
           this.connection = undefined
           this._channel = undefined
@@ -113,25 +125,15 @@ export default class RabbitMQService {
     this.assertedQueues.clear()
   }
 
-  private get options(): AppOptions {
+  private get options(): ServiceOptions {
     if (!this._options) {
       throw new Error('[RabbitMQService] Options not initialized')
     }
-    return this._options
+    return Object.assign({}, DEFAULT_OPTIONS, this._options)
   }
 
   private get url(): string {
     return `amqp://${this.options.user}:${this.options.password}@${this.options.url}`
-  }
-
-  private get concurrency(): number {
-    return this.options.messageConcurrency === undefined
-      ? 1
-      : this.options.messageConcurrency
-  }
-
-  private get retry(): boolean {
-    return this.options.retry === undefined ? true : this.options.retry
   }
 
   private get channel(): amqp.ConfirmChannel {
@@ -180,19 +182,23 @@ export default class RabbitMQService {
               if (err) {
                 this.log.warn(err.message)
               }
-              if (this.channel) {
-                const shouldRetry = this.retry && !msg.fields.redelivered
-                if (shouldRetry) {
-                  this.channel.nack(msg, false, true)
-                } else {
-                  this.channel.nack(msg, false, false)
-                }
-              }
+              this.retryErroredMessageIfNeeded(msg)
             }
           }
         },
         { noAck: false }
       )
+    }
+  }
+
+  private retryErroredMessageIfNeeded(msg: any): void {
+    if (this.channel) {
+      const shouldRetry = this.options.retry && !msg.fields.redelivered
+      if (shouldRetry) {
+        this.channel.nack(msg, false, true)
+      } else {
+        this.channel.nack(msg, false, false)
+      }
     }
   }
 

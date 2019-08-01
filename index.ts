@@ -1,5 +1,5 @@
 import RabbitMQService from './src/service'
-import { AppOptions, SendMessageOptions } from './src/types'
+import { InitOptions, SendMessageOptions } from './src/types'
 
 const rabbitService = new RabbitMQService()
 
@@ -9,7 +9,7 @@ type DecoratorFunction = (
   propertyDescriptor: PropertyDescriptor
 ) => void
 
-export async function initService(options: AppOptions): Promise<void> {
+export async function initService(options: InitOptions): Promise<void> {
   rabbitService.setOptions(options)
   await rabbitService.connect()
 }
