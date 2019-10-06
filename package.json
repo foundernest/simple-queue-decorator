@@ -4,8 +4,7 @@
   "description": "A simple interface with RabbitMQ through typescript decorators",
   "main": "dist/index.js",
   "dependencies": {
-    "amqplib": "^0.5.5",
-    "typescript": "^3.5.3"
+    "amqplib": "^0.5.5"
   },
   "devDependencies": {
     "@types/amqplib": "^0.5.13",
@@ -15,7 +14,8 @@
     "nyc": "^14.1.1",
     "prettier": "^1.18.2",
     "tslint": "^5.18.0",
-    "tslint-config-prettier": "^1.18.0"
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.6.3"
   },
   "scripts": {
     "test": "npm run tsc && nyc mocha dist/tests/*.test.js",
