@@ -57,15 +57,14 @@ export default class RabbitMQService {
     })
   }
 
-  public registerQueue(queueName: string, cb: (r: any) => Promise<void>): void {
-    if (this.queueRegistry[queueName]) {
-      throw new Error(`[RabbitMQService] queue ${queueName} already registered`)
+  public registerQueue(queueName: string, cb: (r: any) => Promise<void>): void
+  public registerQueue(queueName: string | string[], cb: (r: any) => Promise<void>): void {
+
+    if (Array.isArray(queueName)) {
+      queueName.forEach((val) => this._registerQueue(val, cb))
+    } else {
+      this._registerQueue(queueName, cb)
     }
-    this.queueRegistry[queueName] = {
-      cb,
-      connected: false,
-    }
-    this.consumeQueue(queueName)
   }
 
   public async connect(): Promise<void> {
@@ -218,5 +217,16 @@ export default class RabbitMQService {
       }) // Creates the queue if doesn't exists
       this.assertedQueues.add(queueName)
     }
+  }
+
+  private _registerQueue(queueName: string, cb: (r: any) => Promise<void>): void {
+    if (this.queueRegistry[queueName]) {
+      throw new Error(`[RabbitMQService] queue ${queueName} already registered`)
+    }
+    this.queueRegistry[queueName] = {
+      cb,
+      connected: false,
+    }
+    this.consumeQueue(queueName)
   }
 }
