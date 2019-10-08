@@ -57,7 +57,6 @@ export default class RabbitMQService {
     })
   }
 
-  public registerQueue(queueName: string, cb: (r: any) => Promise<void>): void
   public registerQueue(queueName: string | string[], cb: (r: any) => Promise<void>): void {
 
     if (Array.isArray(queueName)) {
