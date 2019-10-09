@@ -60,15 +60,13 @@ export default class RabbitMQService {
     await emitter.sendMessage(queue, msg, options)
   }
 
-  public registerQueue(queueName: string, cb: (r: any) => Promise<void>): void {
-    if (this.queueRegistry[queueName]) {
-      throw new Error(`[RabbitMQService] queue ${queueName} already registered`)
+  public registerQueue(queueName: string | string[], cb: (r: any) => Promise<void>): void {
+
+    if (Array.isArray(queueName)) {
+      queueName.forEach((val) => this.registerSingleQueue(val, cb))
+    } else {
+      this.registerSingleQueue(queueName, cb)
     }
-    this.queueRegistry[queueName] = {
-      cb,
-      connected: false,
-    }
-    this.consumeQueue(queueName)
   }
 
   public async connect(): Promise<void> {
@@ -211,5 +209,16 @@ export default class RabbitMQService {
       }) // Creates the queue if doesn't exists
       this.assertedQueues.add(queueName)
     }
+  }
+
+  private registerSingleQueue(queueName: string, cb: (r: any) => Promise<void>): void {
+    if (this.queueRegistry[queueName]) {
+      throw new Error(`[RabbitMQService] queue ${queueName} already registered`)
+    }
+    this.queueRegistry[queueName] = {
+      cb,
+      connected: false,
+    }
+    this.consumeQueue(queueName)
   }
 }

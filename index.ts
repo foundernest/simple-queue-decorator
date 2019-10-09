@@ -27,7 +27,7 @@ export function closeService(): Promise<void> {
 }
 
 export function registerQueue(
-  queueName: string,
+  queueName: string | string[],
   cb: (r: any) => Promise<void>
 ): void {
   rabbitService.registerQueue(queueName, cb)
