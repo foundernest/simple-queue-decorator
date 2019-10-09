@@ -60,9 +60,9 @@ export default class RabbitMQService {
   public registerQueue(queueName: string | string[], cb: (r: any) => Promise<void>): void {
 
     if (Array.isArray(queueName)) {
-      queueName.forEach((val) => this._registerQueue(val, cb))
+      queueName.forEach((val) => this.registerSingleQueue(val, cb))
     } else {
-      this._registerQueue(queueName, cb)
+      this.registerSingleQueue(queueName, cb)
     }
   }
 
@@ -218,7 +218,7 @@ export default class RabbitMQService {
     }
   }
 
-  private _registerQueue(queueName: string, cb: (r: any) => Promise<void>): void {
+  private registerSingleQueue(queueName: string, cb: (r: any) => Promise<void>): void {
     if (this.queueRegistry[queueName]) {
       throw new Error(`[RabbitMQService] queue ${queueName} already registered`)
     }
