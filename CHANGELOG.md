@@ -1,7 +1,10 @@
-1.2.1 / ####-##-##
+1.3.0 / ####-##-##
 ==================
 
+* RegisterQueue now support an array of queues
 * Minor code improvements
+* Dependencies updated
+* Typescript set as a devDependency
 
 1.2.0 / 2019-07-31
 ==================
