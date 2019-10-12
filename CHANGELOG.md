@@ -5,6 +5,7 @@
 * Minor code improvements
 * Dependencies updated
 * Typescript set as a devDependency
+* Tests removed from build
 
 1.2.0 / 2019-07-31
 ==================
