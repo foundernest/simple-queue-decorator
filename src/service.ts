@@ -1,33 +1,51 @@
 import amqp from 'amqplib'
 import { wait } from './utils'
-import { AppOptions, SendMessageOptions } from './types'
+import {
+  InitOptions,
+  SendMessageOptions,
+  ServiceOptions,
+  DefaultOptions,
+} from './types'
 import Log from './log'
+import MessageEmitter from './messageEmitter'
 
 type QueueRegistry = {
   [q: string]: {
     cb: (r: any) => Promise<void>
-    connected: boolean
+    connected: boolean // This is to make "consumeQueue" idempotent
   }
 }
 
+const DEFAULT_OPTIONS: DefaultOptions = {
+  messageConcurrency: 1,
+  log: true,
+  retry: true,
+  connectionRetryDelay: 5000,
+}
+
+enum ServiceStatus {
+  Connected,
+  Idle,
+  Connecting,
+}
+
 export default class RabbitMQService {
-  private _options?: AppOptions
+  private _options?: InitOptions
   private _channel?: amqp.ConfirmChannel
   private queueRegistry: QueueRegistry = {}
   private connection?: amqp.Connection
-  private connected = false
   private log: Log
   private assertedQueues: Set<string> = new Set() // Avoid duplicated queues
-  private connectRetry = true
+  private status: ServiceStatus = ServiceStatus.Idle
 
-  constructor(options?: AppOptions) {
+  constructor(options?: InitOptions) {
     this.log = new Log(true)
     if (options) {
       this.setOptions(options)
     }
   }
 
-  public setOptions(options: AppOptions): void {
+  public setOptions(options: InitOptions): void {
     this._options = options
     this.log = new Log(options.log)
   }
@@ -37,40 +55,23 @@ export default class RabbitMQService {
     msg: any,
     options: SendMessageOptions
   ): Promise<void> {
-    await this.createQueue(queue)
-    await new Promise((resolve, reject) => {
-      this.channel.sendToQueue(
-        queue,
-        Buffer.from(JSON.stringify(msg)),
-        {
-          persistent: true,
-          priority: options.priority,
-        },
-        err => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve()
-          }
-        }
-      )
-    })
+    await this.assertQueue(queue)
+    const emitter = new MessageEmitter(this.channel)
+    await emitter.sendMessage(queue, msg, options)
   }
 
-  public registerQueue(queueName: string, cb: (r: any) => Promise<void>): void {
-    if (this.queueRegistry[queueName]) {
-      throw new Error(`[RabbitMQService] queue ${queueName} already registered`)
+  public registerQueue(queueName: string | string[], cb: (r: any) => Promise<void>): void {
+
+    if (Array.isArray(queueName)) {
+      queueName.forEach((val) => this.registerSingleQueue(val, cb))
+    } else {
+      this.registerSingleQueue(queueName, cb)
     }
-    this.queueRegistry[queueName] = {
-      cb,
-      connected: false,
-    }
-    this.consumeQueue(queueName)
   }
 
   public async connect(): Promise<void> {
     this.disconnect()
-    this.connectRetry = true
+    this.status = ServiceStatus.Connecting
     let retries = 0
 
     while (this.shouldRetryConnection(retries)) {
@@ -79,12 +80,12 @@ export default class RabbitMQService {
         this.log.log('[RabbitMQ] Connecting')
         this.connection = await amqp.connect(this.url)
         this._channel = await this.connection.createConfirmChannel()
-        await this.channel.prefetch(this.concurrency) // Number of messages to fetch simultaneously
+        await this.channel.prefetch(this.options.messageConcurrency) // Number of messages to fetch simultaneously
         this.connection.on('close', () => {
           this.connection = undefined
           this._channel = undefined
           // Unexpected close
-          if (this.connected) {
+          if (this.status === ServiceStatus.Connected) {
             this.log.warn('[RabbitMQ] Unexpected Close')
             this.connect()
           }
@@ -95,7 +96,7 @@ export default class RabbitMQService {
           })
         )
 
-        this.connected = true
+        this.status = ServiceStatus.Connected
         this.log.log('[RabbitMQ] Connected')
       } catch (err) {
         this.log.warn('[RabbitMQ] Error Connecting', err.message)
@@ -110,8 +111,7 @@ export default class RabbitMQService {
   }
 
   public async disconnect(): Promise<void> {
-    this.connected = false
-    this.connectRetry = false
+    this.status = ServiceStatus.Idle
     for (const q of Object.keys(this.queueRegistry)) {
       this.queueRegistry[q].connected = false
     }
@@ -123,25 +123,15 @@ export default class RabbitMQService {
     this.assertedQueues.clear()
   }
 
-  private get options(): AppOptions {
+  private get options(): ServiceOptions {
     if (!this._options) {
       throw new Error('[RabbitMQService] Options not initialized')
     }
-    return this._options
+    return Object.assign({}, DEFAULT_OPTIONS, this._options)
   }
 
   private get url(): string {
     return `amqp://${this.options.user}:${this.options.password}@${this.options.url}`
-  }
-
-  private get concurrency(): number {
-    return this.options.messageConcurrency === undefined
-      ? 1
-      : this.options.messageConcurrency
-  }
-
-  private get retry(): boolean {
-    return this.options.retry === undefined ? true : this.options.retry
   }
 
   private get channel(): amqp.ConfirmChannel {
@@ -153,12 +143,9 @@ export default class RabbitMQService {
   }
 
   private get connectionDelay(): number {
+    const defaultConnectionDelay = 5000
     const delay = this.options.connectionRetryDelay
-    if (delay === undefined) {
-      return 5000
-    } else {
-      return delay
-    }
+    return delay === undefined ? defaultConnectionDelay : delay
   }
 
   private shouldRetryConnection(retries: number): boolean {
@@ -167,14 +154,14 @@ export default class RabbitMQService {
         return false
       }
     }
-    return !this.connected && this.connectRetry
+    return this.status === ServiceStatus.Connecting
   }
 
   private async consumeQueue(queueName: string): Promise<void> {
     const queueData = this.queueRegistry[queueName]
     if (this._channel && !queueData.connected) {
       queueData.connected = true
-      await this.createQueue(queueName)
+      await this.assertQueue(queueName)
       await this.channel.consume(
         queueName,
         async (msg: any) => {
@@ -193,14 +180,7 @@ export default class RabbitMQService {
               if (err) {
                 this.log.warn(err.message)
               }
-              if (this.channel) {
-                const shouldRetry = this.retry && !msg.fields.redelivered
-                if (shouldRetry) {
-                  this.channel.nack(msg, false, true)
-                } else {
-                  this.channel.nack(msg, false, false)
-                }
-              }
+              this.retryErroredMessageIfNeeded(msg)
             }
           }
         },
@@ -209,7 +189,18 @@ export default class RabbitMQService {
     }
   }
 
-  private async createQueue(queueName: string): Promise<void> {
+  private retryErroredMessageIfNeeded(msg: any): void {
+    if (this.channel) {
+      const shouldRetry = this.options.retry && !msg.fields.redelivered
+      if (shouldRetry) {
+        this.channel.nack(msg, false, true)
+      } else {
+        this.channel.nack(msg, false, false)
+      }
+    }
+  }
+
+  private async assertQueue(queueName: string): Promise<void> {
     const queueAlreadyExists = this.assertedQueues.has(queueName)
     if (!queueAlreadyExists) {
       await this.channel.assertQueue(queueName, {
@@ -218,5 +209,16 @@ export default class RabbitMQService {
       }) // Creates the queue if doesn't exists
       this.assertedQueues.add(queueName)
     }
+  }
+
+  private registerSingleQueue(queueName: string, cb: (r: any) => Promise<void>): void {
+    if (this.queueRegistry[queueName]) {
+      throw new Error(`[RabbitMQService] queue ${queueName} already registered`)
+    }
+    this.queueRegistry[queueName] = {
+      cb,
+      connected: false,
+    }
+    this.consumeQueue(queueName)
   }
 }

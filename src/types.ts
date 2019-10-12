@@ -1,4 +1,4 @@
-export type AppOptions = {
+export type InitOptions = {
   url: string
   user: string
   password: string
@@ -12,3 +12,12 @@ export type AppOptions = {
 export type SendMessageOptions = {
   priority?: number
 }
+
+export type DefaultOptions = {
+  messageConcurrency: number
+  log: boolean
+  retry: boolean
+  connectionRetryDelay: number
+}
+
+export type ServiceOptions = InitOptions & DefaultOptions

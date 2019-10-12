@@ -77,7 +77,7 @@ SimpleQueueDecorator.registerQueue("my-queue", async (msg) => {
 })
 ```
 
-This is preferable if using JavaScript or using dynamic dependencies (e.g. injectables) in the queue callback.
+This is preferable if using JavaScript or using dynamic dependencies (e.g. injectables) in the queue callback. RegisterQueue also support an array of queues, the callback will be execute for any message in any of those queues.
 
 Send a message with priority:
 
