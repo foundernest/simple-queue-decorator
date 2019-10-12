@@ -22,7 +22,7 @@
     "test": "nyc mocha --require ts-node/register ./tests/*.test.ts",
     "tsc": "rm -rf dist && tsc",
     "tslint": "tslint 'src/**/*.ts?(x)'",
-    "prepublishOnly": "npm run tslint && npm test"
+    "prepublishOnly": "npm run tslint && npm test && npm run tsc"
   },
   "files": [
     "dist/src",
