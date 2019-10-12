@@ -1,4 +1,4 @@
-1.3.0 / ####-##-##
+1.3.0 / 2019-10-12
 ==================
 
 * RegisterQueue now support an array of queues
