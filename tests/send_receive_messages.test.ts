@@ -71,4 +71,25 @@ describe('Send And Received Queue Messages', () => {
     await sendMessage('no-decorator-queue', { test: 'arthur' })
     await p
   })
+
+  it('Register Queue Without Decorator (several queues)', async () => {
+    let callbackCallCount = 0;
+    const p = new Promise(resolve => {
+      function msgCallback(msg: any): Promise<void> {
+        assert.strictEqual(msg.test, 'arthur')
+        callbackCallCount++
+        if (callbackCallCount === 2) {
+          resolve()
+        }
+        return Promise.resolve()
+      }
+
+      registerQueue([
+        'first-no-decorator-queue', 'second-no-decorator-queue'
+      ], msgCallback)
+    })
+    await sendMessage('first-no-decorator-queue', { test: 'arthur' })
+    await sendMessage('second-no-decorator-queue', { test: 'arthur' })
+    await p
+  })
 })
