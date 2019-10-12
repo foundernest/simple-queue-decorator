@@ -13,15 +13,16 @@
     "mocha": "^6.2.1",
     "nyc": "^14.1.1",
     "prettier": "^1.18.2",
+    "ts-node": "^8.4.1",
     "tslint": "^5.20.0",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.6.4"
   },
   "scripts": {
-    "test": "npm run tsc && nyc mocha dist/tests/*.test.js",
+    "test": "nyc mocha --require ts-node/register ./tests/*.test.ts",
     "tsc": "rm -rf dist && tsc",
     "tslint": "tslint 'src/**/*.ts?(x)'",
-    "prepublishOnly": "npm run tslint && npm test"
+    "prepublishOnly": "npm run tslint && npm test && npm run tsc"
   },
   "files": [
     "dist/src",
