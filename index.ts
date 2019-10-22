@@ -9,7 +9,7 @@ type DecoratorFunction = (
   propertyDescriptor: PropertyDescriptor
 ) => void
 
-export async function initService(options: InitOptions): Promise<void> {
+export async function init(options: InitOptions): Promise<void> {
   rabbitService.setOptions(options)
   await rabbitService.connect()
 }
@@ -22,7 +22,7 @@ export function sendMessage(
   return rabbitService.sendMessage(queue, msg, options)
 }
 
-export function closeService(): Promise<void> {
+export function close(): Promise<void> {
   return rabbitService.disconnect()
 }
 

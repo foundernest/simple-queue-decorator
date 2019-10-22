@@ -1,3 +1,8 @@
+2.0.0 / ####-##-##
+==================
+
+* InitService and closeService are not init and close respectively
+
 1.3.0 / 2019-10-12
 ==================
 

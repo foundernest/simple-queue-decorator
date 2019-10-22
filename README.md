@@ -30,17 +30,17 @@ Init the service:
 ```ts
 import * as SimpleQueueDecorator from 'simple-queue-decorator'
 
-await SimpleQueueDecorator.initService({
+await SimpleQueueDecorator.init({
     url: "127.0.0.1",
     user: "guest",
     password: "guest"
 })
 
-await SimpleQueueDecorator.closeService(); // Closes the service
+await SimpleQueueDecorator.close(); // Closes the service
 ```
 
 
-Consume Messages (this can be done before `initService`):
+Consume Messages (this can be done before `init`):
 ```ts
 import { OnQueue } from 'simple-queue-decorator'
 

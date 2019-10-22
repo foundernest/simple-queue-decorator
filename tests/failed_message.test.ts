@@ -1,4 +1,4 @@
-import { sendMessage, OnQueue, initService, closeService } from '..'
+import { sendMessage, OnQueue, init, close } from '..'
 
 import Config from './config'
 import { EventEmitter } from 'events'
@@ -24,11 +24,11 @@ class BadWolpertingerTest {
 
 describe('Failed Messages', () => {
   afterEach(async () => {
-    await closeService()
+    await close()
   })
 
   it('Retry Failed Message Once', async () => {
-    await initService(Config)
+    await init(Config)
 
     sendMessage('wolpertinger-bad-test-queue', { test: 'Bad1' })
     const msg1 = await BadWolpertingerTest.waitForNextMessage()
@@ -47,7 +47,7 @@ describe('Failed Messages', () => {
   })
 
   it('Disable Retry Message', async () => {
-    await initService({ ...Config, retry: false })
+    await init({ ...Config, retry: false })
     sendMessage('wolpertinger-bad-test-queue', { test: 'Bad1' })
     const msg1 = await BadWolpertingerTest.waitForNextMessage()
     assert.strictEqual(msg1.test, 'Bad1')
