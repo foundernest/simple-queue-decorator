@@ -2,6 +2,7 @@
 ==================
 
 * InitService and closeService are not init and close respectively
+* MessageConcurrency option renamed to concurrency
 
 1.3.0 / 2019-10-12
 ==================

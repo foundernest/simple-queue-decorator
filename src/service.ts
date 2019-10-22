@@ -17,7 +17,7 @@ type QueueRegistry = {
 }
 
 const DEFAULT_OPTIONS: DefaultOptions = {
-  messageConcurrency: 1,
+  concurrency: 1,
   log: true,
   retry: true,
   connectionRetryDelay: 5000,
@@ -80,7 +80,7 @@ export default class RabbitMQService {
         this.log.log('[RabbitMQ] Connecting')
         this.connection = await amqp.connect(this.url)
         this._channel = await this.connection.createConfirmChannel()
-        await this.channel.prefetch(this.options.messageConcurrency) // Number of messages to fetch simultaneously
+        await this.channel.prefetch(this.options.concurrency) // Number of messages to fetch simultaneously
         this.connection.on('close', () => {
           this.connection = undefined
           this._channel = undefined
