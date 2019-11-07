@@ -1,8 +1,8 @@
 import {
   sendMessage,
   OnQueue,
-  initService,
-  closeService,
+  init,
+  close,
   registerQueue,
 } from '..'
 
@@ -29,11 +29,11 @@ class WolpertingerTest {
 
 describe('Send And Received Queue Messages', () => {
   before(async () => {
-    await initService(Config)
+    await init(Config)
   })
 
   after(async () => {
-    await closeService()
+    await close()
   })
 
   it('Send Message', async () => {

@@ -1,4 +1,4 @@
-export default class Logs {
+export default class Log {
   private active: boolean
   constructor(active: boolean = true) {
     this.active = active

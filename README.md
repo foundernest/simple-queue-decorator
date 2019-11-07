@@ -30,17 +30,17 @@ Init the service:
 ```ts
 import * as SimpleQueueDecorator from 'simple-queue-decorator'
 
-await SimpleQueueDecorator.initService({
+await SimpleQueueDecorator.init({
     url: "127.0.0.1",
     user: "guest",
     password: "guest"
 })
 
-await SimpleQueueDecorator.closeService(); // Closes the service
+await SimpleQueueDecorator.close(); // Closes the service
 ```
 
 
-Consume Messages (this can be done before `initService`):
+Consume Messages (this can be done before `init`):
 ```ts
 import { OnQueue } from 'simple-queue-decorator'
 
@@ -96,15 +96,15 @@ Messages will be ordered and received according to priority. Priority can be `LO
 * When messages are instantly consumed, order may not be guaranteed.
 
 
-The following options can be passed to `initService`:
+The following options can be passed to `init`:
 
 * **url**: The plain url (no protocol) of rabbitMQ.
 * **user**: RabbitMQ user.
 * **password**: RabbitMQ password.
 * **log**: If true, will log internal queue errors, defaults to true.
-* **messageConcurrency**: The number of messages to be consumed at the same time, defaults to 1.
+* **concurrency**: The number of messages to be consumed at the same time, defaults to 1.
 * **retry**: If true, 1 retry per message will be made if the callback returns a rejected promise, defaults to true.
-* **maxConnectionAttempts**: Maximum number of recconnection attempts on `initService`, if 0, it will attempt indefinitely. Defaults to 0.
+* **maxConnectionAttempts**: Maximum number of recconnection attempts on `init`, if 0, it will attempt indefinitely. Defaults to 0.
 * **connectionRetryDelay**: Milliseconds to wait before connection attempts. Defaults to 5
 
 ### Development steps

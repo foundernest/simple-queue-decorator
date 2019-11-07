@@ -2,7 +2,7 @@ export type InitOptions = {
   url: string
   user: string
   password: string
-  messageConcurrency?: number
+  concurrency?: number
   log?: boolean
   retry?: boolean
   maxConnectionAttempts?: number
@@ -14,7 +14,7 @@ export type SendMessageOptions = {
 }
 
 export type DefaultOptions = {
-  messageConcurrency: number
+  concurrency: number
   log: boolean
   retry: boolean
   connectionRetryDelay: number

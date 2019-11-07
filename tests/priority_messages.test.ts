@@ -1,7 +1,7 @@
 import {
   sendMessage,
-  initService,
-  closeService,
+  init,
+  close,
   registerQueue,
   MessagePriority,
 } from '..'
@@ -11,11 +11,11 @@ import assert = require('assert')
 
 describe('Send And Received Queue Messages', () => {
   before(async () => {
-    await initService(Config)
+    await init(Config)
   })
 
   after(async () => {
-    await closeService()
+    await close()
   })
 
   it('Priority Queue', done => {
