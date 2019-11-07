@@ -1,4 +1,4 @@
-2.0.0 / ####-##-##
+2.0.0 / 2019-11-07
 ==================
 
 * InitService and closeService are now init and close respectively
