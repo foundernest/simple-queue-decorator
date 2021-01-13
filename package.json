@@ -1,6 +1,6 @@
 {
   "name": "simple-queue-decorator",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "A simple interface with RabbitMQ through typescript decorators",
   "main": "dist/index.js",
   "dependencies": {
