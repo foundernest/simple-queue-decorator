@@ -1,10 +1,4 @@
-import {
-  sendMessage,
-  OnQueue,
-  init,
-  close,
-  registerQueue,
-} from '..'
+import { sendMessage, OnQueue, init, close, registerQueue } from '..'
 
 import Config from './config'
 import { EventEmitter } from 'events'
@@ -19,8 +13,8 @@ class WolpertingerTest {
   }
 
   public static waitForNextMessage(): Promise<any> {
-    return new Promise(resolve => {
-      this.events.once('msg', msg => {
+    return new Promise((resolve) => {
+      this.events.once('msg', (msg) => {
         resolve(msg)
       })
     })
@@ -42,7 +36,7 @@ describe('Send And Received Queue Messages', () => {
     assert.strictEqual(msg.test, 'Hola')
   })
 
-  it('Queue Multiple Messages Before Reading Them', done => {
+  it('Queue Multiple Messages Before Reading Them', (done) => {
     for (let i = 0; i < 10; i++) {
       sendMessage('wolpertinger-test-queue-2', { item: i })
     }
@@ -60,10 +54,10 @@ describe('Send And Received Queue Messages', () => {
   })
 
   it('Register Queue Without Decorator', async () => {
-    const p = new Promise(resolve => {
+    const p = new Promise((resolve) => {
       function msgCallback(msg: any): Promise<void> {
         assert.strictEqual(msg.test, 'arthur')
-        resolve()
+        resolve(undefined)
         return Promise.resolve()
       }
       registerQueue('no-decorator-queue', msgCallback) // No need for await, so registering is immediate
@@ -73,20 +67,21 @@ describe('Send And Received Queue Messages', () => {
   })
 
   it('Register Queue Without Decorator (several queues)', async () => {
-    let callbackCallCount = 0;
-    const p = new Promise(resolve => {
+    let callbackCallCount = 0
+    const p = new Promise((resolve) => {
       function msgCallback(msg: any): Promise<void> {
         assert.strictEqual(msg.test, 'arthur')
         callbackCallCount++
         if (callbackCallCount === 2) {
-          resolve()
+          resolve(undefined)
         }
         return Promise.resolve()
       }
 
-      registerQueue([
-        'first-no-decorator-queue', 'second-no-decorator-queue'
-      ], msgCallback)
+      registerQueue(
+        ['first-no-decorator-queue', 'second-no-decorator-queue'],
+        msgCallback
+      )
     })
     await sendMessage('first-no-decorator-queue', { test: 'arthur' })
     await sendMessage('second-no-decorator-queue', { test: 'arthur' })
