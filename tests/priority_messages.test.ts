@@ -1,10 +1,4 @@
-import {
-  sendMessage,
-  init,
-  close,
-  registerQueue,
-  MessagePriority,
-} from '..'
+import { sendMessage, init, close, registerQueue, MessagePriority } from '..'
 
 import Config from './config'
 import assert = require('assert')
@@ -18,7 +12,7 @@ describe('Send And Received Queue Messages', () => {
     await close()
   })
 
-  it('Priority Queue', done => {
+  it('Priority Queue', (done) => {
     sendMessage(
       'priority-test-queue',
       { content: 'msg1' },
@@ -42,7 +36,7 @@ describe('Send And Received Queue Messages', () => {
     )
 
     const receivedMessages: Array<{ content: string }> = []
-    registerQueue('priority-test-queue', msg => {
+    registerQueue('priority-test-queue', (msg) => {
       receivedMessages.push(msg)
       if (receivedMessages.length === 3) {
         assert.strictEqual(receivedMessages[0].content, 'msg3')

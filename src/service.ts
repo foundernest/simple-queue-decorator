@@ -60,8 +60,10 @@ export default class RabbitMQService {
     await emitter.sendMessage(queue, msg, options)
   }
 
-  public registerQueue(queueName: string | string[], cb: (r: any) => Promise<void>): void {
-
+  public registerQueue(
+    queueName: string | string[],
+    cb: (r: any) => Promise<void>
+  ): void {
     if (Array.isArray(queueName)) {
       queueName.forEach((val) => this.registerSingleQueue(val, cb))
     } else {
@@ -91,7 +93,7 @@ export default class RabbitMQService {
           }
         })
         await Promise.all(
-          Object.keys(this.queueRegistry).map(queue => {
+          Object.keys(this.queueRegistry).map((queue) => {
             return this.consumeQueue(queue)
           })
         )
@@ -211,7 +213,10 @@ export default class RabbitMQService {
     }
   }
 
-  private registerSingleQueue(queueName: string, cb: (r: any) => Promise<void>): void {
+  private registerSingleQueue(
+    queueName: string,
+    cb: (r: any) => Promise<void>
+  ): void {
     if (this.queueRegistry[queueName]) {
       throw new Error(`[RabbitMQService] queue ${queueName} already registered`)
     }

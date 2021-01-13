@@ -14,8 +14,8 @@ class BadWolpertingerTest {
   }
 
   public static waitForNextMessage(): Promise<any> {
-    return new Promise(resolve => {
-      this.events.once('msg', msg => {
+    return new Promise((resolve) => {
+      this.events.once('msg', (msg) => {
         resolve(msg)
       })
     })

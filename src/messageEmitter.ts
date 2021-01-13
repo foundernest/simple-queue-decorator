@@ -21,7 +21,7 @@ export default class MessageEmitter {
           persistent: true,
           priority: options.priority,
         },
-        err => {
+        (err) => {
           if (err) {
             reject(err)
           } else {
