@@ -133,7 +133,8 @@ export default class RabbitMQService {
   }
 
   private get url(): string {
-    return `amqp://${this.options.user}:${this.options.password}@${this.options.url}`
+    const protocol = !this.options.protocol ? 'amqp' : this.options.protocol
+    return `${protocol}://${this.options.user}:${this.options.password}@${this.options.url}`
   }
 
   private get channel(): amqp.ConfirmChannel {
