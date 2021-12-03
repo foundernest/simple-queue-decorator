@@ -7,6 +7,7 @@ export type InitOptions = {
   retry?: boolean
   maxConnectionAttempts?: number
   connectionRetryDelay?: number
+  protocol?: string
 }
 
 export type SendMessageOptions = {

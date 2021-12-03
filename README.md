@@ -98,7 +98,7 @@ Messages will be ordered and received according to priority. Priority can be `LO
 
 The following options can be passed to `init`:
 
-* **url**: The plain url (no protocol) of rabbitMQ.
+* **url**: The plain url (amqp protocol) of rabbitMQ.
 * **user**: RabbitMQ user.
 * **password**: RabbitMQ password.
 * **log**: If true, will log internal queue errors, defaults to true.
@@ -106,6 +106,7 @@ The following options can be passed to `init`:
 * **retry**: If true, 1 retry per message will be made if the callback returns a rejected promise, defaults to true.
 * **maxConnectionAttempts**: Maximum number of recconnection attempts on `init`, if 0, it will attempt indefinitely. Defaults to 0.
 * **connectionRetryDelay**: Milliseconds to wait before connection attempts. Defaults to 5
+* **protocol**: Specify the protocol (i.e: amqp, amqps, https, etc)
 
 ### Development steps
 node and npm required, either docker or a running instance of rabbitmq required.
